@@ -63,4 +63,43 @@
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
   }
+
+  /* Feedback form: star rating + friendly submit (mailto fallback, no backend here) */
+  var starsWrap = document.getElementById('ffStars');
+  var starsInput = document.getElementById('ffRatingValue');
+  if (starsWrap && starsInput) {
+    var starEls = starsWrap.querySelectorAll('span');
+    var setStars = function (n) {
+      starEls.forEach(function (s, i) { s.classList.toggle('active', i < n); });
+      starsInput.value = n;
+    };
+    starEls.forEach(function (s, i) {
+      s.addEventListener('click', function () { setStars(i + 1); });
+      s.addEventListener('mouseenter', function () {
+        starEls.forEach(function (el2, j) { el2.style.color = j <= i ? 'var(--gold)' : ''; });
+      });
+    });
+    starsWrap.addEventListener('mouseleave', function () {
+      starEls.forEach(function (el2) { el2.style.color = ''; });
+    });
+  }
+
+  var feedbackForm = document.getElementById('feedbackForm');
+  if (feedbackForm) {
+    feedbackForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = document.getElementById('ffName').value.trim() || 'A client';
+      var rating = starsInput ? (starsInput.value || '5') : '5';
+      var message = document.getElementById('ffMessage').value.trim();
+      var subject = encodeURIComponent('Feedback for AG Emerald — ' + name);
+      var body = encodeURIComponent(
+        'Name: ' + name + '\n' +
+        'Rating: ' + rating + '/5\n\n' +
+        message
+      );
+      window.location.href = 'mailto:info@agemerald.co.ke?subject=' + subject + '&body=' + body;
+      var status = document.getElementById('ffStatus');
+      if (status) status.textContent = 'Opening your email app to send this feedback…';
+    });
+  }
 })();
